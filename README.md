@@ -29,15 +29,46 @@ Example `Promise` consumers in root folder:
 
 The example code these files should be studied in order to make sense of the produced console output.
 
-To run a command from a terminal window, type `node` follow by a space and the starting number of the example file name, then press the <kbd>Tab</kbd>key for auto-completion, followed by another space and finally the `<number>` expected by the command.
+To run a command from a terminal window, type `node` follow by a space and the starting number of the example file name, then press the <kbd>Tab</kbd>key for auto-completion, followed by another space and finally the `<option>` expected by the command.
+
+### Promise chain
+
+All promise chain examples have this code in common:
+
+```js
+function main(option) {
+  console.log('<<< main starting >>>');
+
+  // Create a promise corresponding to <option>
+  const p = new Promise(...);
+
+  p.then(() => {
+    console.log('then 1');
+  })
+    .then(() => {
+      console.log('then 2');
+    })
+    .catch(() => {
+      console.log('catch 3');
+    })
+    .catch(() => {
+      console.log('catch 4');
+    })
+    .then(() => {
+      console.log('then 5');
+    });
+
+  console.log('<<< main ending >>>');
+}
+```
 
 ### 1-sync-chain.js
 
 ```text
-node 1-sync-chain <number>
+node 1-sync-chain <option>
 ```
 
-With `<number>`:
+Where `<option>` is a number.
 
 1. Consume an immediately resolved synchronous in a chain.
 
@@ -65,10 +96,10 @@ With `<number>`:
 ### 2-async-chain.js
 
 ```text
-node 2-async-chain <number>
+node 2-async-chain <option>
 ```
 
-With `<number>`:
+With `<option>`:
 
 1. Consume an immediately resolved asynchronous promise in a chain.
 
@@ -212,10 +243,10 @@ With `<number>`:
 ### 3-await.js
 
 ```text
-node 3-await <number>
+node 3-await <option>
 ```
 
-With `<number>`:
+With `<option>`:
 
 1. Consume an delayed resolved promise using `await`.
 
@@ -260,7 +291,7 @@ With `<number>`:
 ### 4-all-chain.js
 
 ```text
-node 4-all-chain <number>
+node 4-all-chain <option>
 ```
 
 Using:
@@ -271,7 +302,7 @@ Promise.all()
   .catch(...)
 ```
 
-With `<number>`:
+With `<option>`:
 
 1. Consume an array of deferred resolved promises.
 
@@ -340,7 +371,7 @@ error: Oops...
 ### 5-all-await.js
 
 ```text
-node 4-all-await <number>
+node 4-all-await <option>
 ```
 
 Using:
@@ -354,7 +385,7 @@ try {
 }
 ```
 
-With `<number>`:
+With `<option>`:
 
 1. Consume an array of delayed resolved promises.
 

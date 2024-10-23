@@ -65,13 +65,13 @@ export class AsyncPromise {
       reject(err);
     }
 
-    console.log(`[promise #${this.#id} ${this.#state}]`);
+    console.log(`[promise#${this.#id} ${this.#state}]`);
   }
 
   #fulfilledHandler(resolve, reject, onFulfilled) {
-    console.log(`[enqueue microtask #${this.#id}]`);
+    console.log(`[enqueue microtask#${this.#id}]`);
     queueMicrotask(() => {
-      console.log(`\n[microtask #${this.#id} start]`);
+      console.log(`\n[microtask#${this.#id} start]`);
 
       try {
         if (typeof onFulfilled === 'function') {
@@ -88,14 +88,14 @@ export class AsyncPromise {
         reject(err);
       }
 
-      console.log(`[microtask #${this.#id} exit]`);
+      console.log(`[microtask#${this.#id} exit]`);
     });
   }
 
   #rejectedHandler(resolve, reject, onRejected) {
-    console.log(`[enqueue microtask #${this.#id}]`);
+    console.log(`[enqueue microtask#${this.#id}]`);
     queueMicrotask(() => {
-      console.log(`\n[microtask #${this.#id} start]`);
+      console.log(`\n[microtask#${this.#id} start]`);
       try {
         if (typeof onRejected === 'function') {
           const result = onRejected(this.#reason);
@@ -111,7 +111,7 @@ export class AsyncPromise {
         reject(err);
       }
 
-      console.log(`[microtask #${this.#id} exit]`);
+      console.log(`[microtask#${this.#id} exit]`);
     });
   }
 

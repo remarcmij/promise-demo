@@ -12,19 +12,19 @@ function main(option) {
   });
 
   p.then(() => {
-    console.log('then 1');
+    console.log('>> then#1');
   })
     .then(() => {
-      console.log('then 2');
+      console.log('>> then#2');
     })
     .catch(() => {
-      console.log('catch 3');
+      console.log('>> catch#3');
     })
     .catch(() => {
-      console.log('catch 4');
+      console.log('>> catch#4');
     })
     .then(() => {
-      console.log('then 5');
+      console.log('>> then#5');
     });
 
   console.log('<<< main ending >>>');

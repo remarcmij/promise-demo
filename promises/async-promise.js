@@ -139,24 +139,4 @@ export class AsyncPromise {
   catch(onRejected) {
     return this.then(null, onRejected);
   }
-
-  // Promise.finally adapted from:
-  // https://gist.github.com/developit/d970bac18430943e4b3392b029a2a96c#file-finally-polyfill-js
-  finally(callback) {
-    if (typeof callback !== 'function') {
-      return this.then(callback, callback);
-    }
-    // get the current promise or a new one
-    const P = this.constructor;
-
-    // return the promise and call the callback function
-    // as soon as the promise is rejected or resolved with its value
-    return this.then(
-      (value) => P.resolve(callback()).then(() => value),
-      (err) =>
-        P.resolve(callback()).then(() => {
-          throw err;
-        })
-    );
-  }
 }

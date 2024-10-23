@@ -51,17 +51,4 @@ export class SyncPromise {
   catch(onRejected) {
     return this.then(null, onRejected);
   }
-
-  finally(onFinally) {
-    return this.then(
-      (value) => {
-        onFinally();
-        return value;
-      },
-      (error) => {
-        onFinally();
-        throw error;
-      }
-    );
-  }
 }

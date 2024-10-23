@@ -1,4 +1,4 @@
-import { createPromise } from './helpers/createPromise.js';
+import { createPromise } from './helpers/helpers.js';
 import { AsyncPromise as Promise } from './promises/async-promise.js';
 
 async function main(option) {

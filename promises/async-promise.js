@@ -1,10 +1,5 @@
 // Adapted from: https://medium.com/swlh/implement-a-simple-promise-in-javascript-20c9705f197a
 
-// check for promise or promise-like result
-const isThenable = (result) =>
-  ['object', 'function'].includes(typeof result) &&
-  typeof result.then === 'function';
-
 export class AsyncPromise {
   static resolve(value) {
     return new AsyncPromise((resolve, reject) => resolve(value));
@@ -74,6 +69,7 @@ export class AsyncPromise {
   }
 
   #fulfilledHandler(resolve, reject, onFulfilled) {
+    console.log(`[enqueue microtask #${this.#id}]`);
     queueMicrotask(() => {
       console.log(`\n[microtask #${this.#id} start]`);
 
@@ -97,6 +93,7 @@ export class AsyncPromise {
   }
 
   #rejectedHandler(resolve, reject, onRejected) {
+    console.log(`[enqueue microtask #${this.#id}]`);
     queueMicrotask(() => {
       console.log(`\n[microtask #${this.#id} start]`);
       try {
@@ -140,3 +137,8 @@ export class AsyncPromise {
     return this.then(null, onRejected);
   }
 }
+
+// check for promise or promise-like result
+export const isThenable = (result) =>
+  ['object', 'function'].includes(typeof result) &&
+  typeof result.then === 'function';

@@ -1,4 +1,4 @@
-import { createPromise } from './helpers/createPromise.js';
+import { createPromise } from './helpers/helpers.js';
 
 async function main(option) {
   console.log('<<< main starting >>>');

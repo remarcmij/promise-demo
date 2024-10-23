@@ -101,11 +101,27 @@ node 2-async-chain <option>
 
 With `<option>`:
 
+0. Consume an asynchronous promise that remains pending in a chain.
+
+   ```text
+   <<< main starting >>>
+   [promise #1 pending]
+   [promise #2 pending]
+   [promise #3 pending]
+   [promise #4 pending]
+   [promise #5 pending]
+   [promise #6 pending]
+   <<< main ending >>>
+   ```
+
+   Note: the initial promise #1 and all subsequent promises created by the `.then()` and `.catch()` methods in the chain remain pending.
+
 1. Consume an immediately resolved asynchronous promise in a chain.
 
    ```text
    <<< main starting >>>
    [promise #1 fulfilled]
+   [enqueue microtask #1]
    [promise #2 pending]
    [promise #3 pending]
    [promise #4 pending]
@@ -115,16 +131,20 @@ With `<option>`:
 
    [microtask #1 start]
    then 1
+   [enqueue microtask #2]
    [microtask #1 exit]
 
    [microtask #2 start]
    then 2
+   [enqueue microtask #3]
    [microtask #2 exit]
 
    [microtask #3 start]
+   [enqueue microtask #4]
    [microtask #3 exit]
 
    [microtask #4 start]
+   [enqueue microtask #5]
    [microtask #4 exit]
 
    [microtask #5 start]
@@ -134,16 +154,19 @@ With `<option>`:
 
    Notes:
 
-   1. The immediately resolved promise #1 is `fulfilled` while within `main()`.
-   2. The pending promises #1-6 are created by the `then()` and
-      `catch()` methods in the chain and are settled through queued microtasks after `main()` has run to completion.
-   3. Promise #6 is a the final promise that promise chain returns. Because it is never consumed with a `.then()` or `.catch()` there is no associated microtask.
+   1. The immediately resolved promise #1 enqueues microtask #1 while within `main()`.
+   2. The pending promises #2-6 are created by the calls to the `then()` and `catch()` methods in the chain and are settled later, after `main()` has run to completion.
+   3. Microtasks #1-2 each invoke a `.then(onFulfilled)` callback and then enqueue a microtask for the promise returned by `.then()`.
+   4. Microtasks #3-4 are associated with the `.catch()` methods in the chain. There are no `onFulfilled()` callbacks to call, only a microtask to enqueue to continue the chain.
+   5. Microtask #5 invokes the `onFulfilled()` callback of the last `.then()`.
+   6. Promise #6 is a the final promise that the complete promise chain returns. Because it is never consumed with a `.then()` or `.catch()` there is no associated microtask.
 
 2. Consume an immediately rejected asynchronous promise in a chain.
 
    ```text
    <<< main starting >>>
    [promise #1 rejected]
+   [enqueue microtask #1]
    [promise #2 pending]
    [promise #3 pending]
    [promise #4 pending]
@@ -152,16 +175,20 @@ With `<option>`:
    <<< main ending >>>
 
    [microtask #1 start]
+   [enqueue microtask #2]
    [microtask #1 exit]
 
    [microtask #2 start]
+   [enqueue microtask #3]
    [microtask #2 exit]
 
    [microtask #3 start]
    catch 3
+   [enqueue microtask #4]
    [microtask #3 exit]
 
    [microtask #4 start]
+   [enqueue microtask #5]
    [microtask #4 exit]
 
    [microtask #5 start]
@@ -169,7 +196,10 @@ With `<option>`:
    [microtask #5 exit]
    ```
 
-   Same as the previous example, but now for a rejected promise.
+   Notes:
+
+   1. Microtasks #1-2 are handled `.then()` handlers that pass on the rejection value down the chain.
+   2. Microtask #3 is from the first `.catch()`. It returns a resolved promise (it resolves to `undefined`). Therefore microtask #4
 
 3. Consume an delayed resolved promise in a chain.
 
@@ -182,21 +212,27 @@ With `<option>`:
    [promise #5 pending]
    [promise #6 pending]
    <<< main ending >>>
-
-   ... 2 second delay ...
+   .
+   . (2 second delay)
+   .
+   [enqueue microtask #1]
 
    [microtask #1 start]
    then 1
+   [enqueue microtask #2]
    [microtask #1 exit]
 
    [microtask #2 start]
    then 2
+   [enqueue microtask #3]
    [microtask #2 exit]
 
    [microtask #3 start]
+   [enqueue microtask #4]
    [microtask #3 exit]
 
    [microtask #4 start]
+   [enqueue microtask #5]
    [microtask #4 exit]
 
    [microtask #5 start]
@@ -204,7 +240,10 @@ With `<option>`:
    [microtask #5 exit]
    ```
 
-   Note: All promises, including #1 remain `pending` within function `main()`.
+   Notes:
+
+   1. All promises, including #1 remain `pending` within function `main()`.
+   2. The chain becomes active when the initial promise is settled after a 2 second delay.
 
 4. Consume an delayed rejected promise in a chain.
 
@@ -217,20 +256,26 @@ With `<option>`:
    [promise #5 pending]
    [promise #6 pending]
    <<< main ending >>>
-
-   ... 2 second delay ...
+   .
+   . (2 second delay)
+   .
+   [enqueue microtask #1]
 
    [microtask #1 start]
+   [enqueue microtask #2]
    [microtask #1 exit]
 
    [microtask #2 start]
+   [enqueue microtask #3]
    [microtask #2 exit]
 
    [microtask #3 start]
    catch 3
+   [enqueue microtask #4]
    [microtask #3 exit]
 
    [microtask #4 start]
+   [enqueue microtask #5]
    [microtask #4 exit]
 
    [microtask #5 start]
@@ -238,7 +283,7 @@ With `<option>`:
    [microtask #5 exit]
    ```
 
-   Same as previous example.
+   Same as previous example, but now for a rejected promise.
 
 ### 3-await.js
 
@@ -253,9 +298,11 @@ With `<option>`:
    ```text
    <<< main starting >>>
    [promise #1 pending]
+   .
+   . (2 second delay)
+   .
    [promise #2 pending]
-
-   ... 2 second delay ...
+   [enqueue microtask #1]
 
    [microtask #1 start]
    [microtask #1 exit]
@@ -267,6 +314,7 @@ With `<option>`:
 
    1. The `main()` function is suspended while awaiting promise #1 to settle.
    2. When promise #1 resolves the `main()` resumes and outputs the resolved value.
+   3. Promise #2 is a promise created a `.then()` call created behind the scenes by the `await` keyword and remains unconsumed.
 
 2. Consume an delayed rejected promise using `await`.
 
@@ -274,9 +322,10 @@ With `<option>`:
    <<< main starting >>>
    [promise #1 pending]
    [promise #2 pending]
-
-   ... 2 second delay ...
-
+   [enqueue microtask #1]
+   .
+   . (2 second delay)
+   .
    [microtask #1 start]
    [microtask #1 exit]
    error: Oops...
@@ -286,7 +335,7 @@ With `<option>`:
    Notes:
 
    1. The `main()` function is suspended while awaiting promise #1 to settle.
-   2. When promise #1 rejects the `main()` resumes and through its catch block outputs the rejected error.
+   2. When promise #1 rejects the `main()` function resumes and, through its catch block, outputs the rejected error.
 
 ### 4-all-chain.js
 
@@ -317,17 +366,22 @@ With `<option>`:
    [promise #6 pending]
    [promise #7 pending]
    [promise #8 pending]
-
-   ... 2 second delay ...
+   .
+   . (2 second delay)
+   .
+   [enqueue microtask #1]
 
    [microtask #1 start]
    [microtask #1 exit]
+   [enqueue microtask #2]
 
    [microtask #2 start]
    [microtask #2 exit]
+   [enqueue microtask #3]
 
    [microtask #3 start]
    [microtask #3 exit]
+   [enqueue microtask #4]
 
    [microtask #4 start]
    [microtask #4 exit]
@@ -336,37 +390,45 @@ With `<option>`:
 
    Notes:
 
-   1. `Promise.all()` calls `.then()` on each promise of the array behind the scenes. Each call to `.then()` creates a new promise resulting in promises #5-8. Since these additional promises remain unconsumed there are no associated microtasks.
+   1. `Promise.all()` internally calls `.then()` on each promise in the array. Each call to `.then()` creates a new promise resulting in promises #5-8. Since these additional promises remain unconsumed there are no associated microtasks.
+   2. Microtasks #1-4 start execution after `main()` has run to completion.
 
 2. Consume an array of delayed rejected promises.
 
-```text
-<<< main starting >>>
-[promise #1 pending]
-[promise #2 pending]
-[promise #3 pending]
-[promise #4 pending]
-<<< main ending >>>
-[promise #5 pending]
-[promise #6 pending]
-[promise #7 pending]
-[promise #8 pending]
+   ```text
+   <<< main starting >>>
+   [promise #1 pending]
+   [promise #2 pending]
+   [promise #3 pending]
+   [promise #4 pending]
+   <<< main ending >>>
+   [promise #5 pending]
+   [promise #6 pending]
+   [promise #7 pending]
+   [promise #8 pending]
+   .
+   . (2 second delay)
+   .
+   [enqueue microtask #1]
 
-... 2 second delay ...
+   [microtask #1 start]
+   [microtask #1 exit]
+   error: Oops...
+   [enqueue microtask #2]
 
-[microtask #1 start]
-[microtask #1 exit]
-error: Oops...
+   [microtask #2 start]
+   [microtask #2 exit]
+   [enqueue microtask #3]
 
-[microtask #2 start]
-[microtask #2 exit]
+   [microtask #3 start]
+   [microtask #3 exit]
+   [enqueue microtask #4]
 
-[microtask #3 start]
-[microtask #3 exit]
+   [microtask #4 start]
+   [microtask #4 exit]
+   ```
 
-[microtask #4 start]
-[microtask #4 exit]
-```
+   As in the previous example, but now for a rejected promise.
 
 ### 5-all-await.js
 
@@ -399,17 +461,22 @@ With `<option>`:
    [promise #6 pending]
    [promise #7 pending]
    [promise #8 pending]
-
-   ... 2 second delay ...
+   .
+   . (2 second delay)
+   .
+   [enqueue microtask #1]
 
    [microtask #1 start]
    [microtask #1 exit]
+   [enqueue microtask #2]
 
    [microtask #2 start]
    [microtask #2 exit]
+   [enqueue microtask #3]
 
    [microtask #3 start]
    [microtask #3 exit]
+   [enqueue microtask #4]
 
    [microtask #4 start]
    [microtask #4 exit]
@@ -417,7 +484,10 @@ With `<option>`:
    <<< main ending >>>
    ```
 
-   Note that the `main()` function is suspended while awaiting for the promise returned by `Promise.all()` to settle.
+   Notes:
+
+   1. The `main()` function is suspended while awaiting the promise returned by `Promise.all()`.
+   2. Promises #5-8 are created internally by `Promise.all()` and remain unconsumed.
 
 2. Consume an array of delayed rejected promises.
 
@@ -431,17 +501,24 @@ With `<option>`:
    [promise #6 pending]
    [promise #7 pending]
    [promise #8 pending]
+   .
+   . (2 second delay)
+   .
+   [enqueue microtask #1]
 
    [microtask #1 start]
    [microtask #1 exit]
    error: Oops...
    <<< main ending >>>
+   [enqueue microtask #2]
 
    [microtask #2 start]
    [microtask #2 exit]
+   [enqueue microtask #3]
 
    [microtask #3 start]
    [microtask #3 exit]
+   [enqueue microtask #4]
 
    [microtask #4 start]
    [microtask #4 exit]

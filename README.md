@@ -155,9 +155,10 @@ With `<option>`:
    Discussion:
 
    1. The immediately resolved `promise#1` enqueues `microtask#1` during the execution of `main()`.
-   2. The pending promises `promise#2`...`promise#6` are created by the calls to the `then()` and `catch()` methods in the chain and are settled later, after `main()` has run to completion.
+   2. The pending promises `promise#2` to `promise#6` are created by the calls to the `then()` and `catch()` methods in the chain and are settled later, after `main()` has run to completion.
    3. The settling of the initial promise causes `microtask#1` to be enqueued.
-   4. Once `main()` has run to completion (i.e. exited), the JavaScript engine takes `microtask#1` off the microtask queue and invokes the `onFulfilled()` callback of the first `.then()`. 4. Both `microtask#1` and `microtask#2` invoke a `.then(onFulfilled)` callback and then enqueue a microtask for the promise returned by `.then()`. 5. Microtasks #3-4 are associated with the `.catch()` methods in the chain. There are no `onFulfilled()` callbacks to call, only a microtask to enqueue to continue the chain. 6. Microtask #5 invokes the `onFulfilled()` callback of the last `.then()`. 7. Promise #6 is a final promise returned by the promise chain itself. Because it is never consumed with a `.then()` or `.catch()` there is no associated microtask.
+   4. Once `main()` has run to completion (i.e. exited), the JavaScript engine runs `microtask#1` which invokes the `onFulfilled()` callback of the `then#1`. This settles `promise#2` which enqueues `microtask#2`.
+   5. When `microtask#1` has run to completion `microtask#2` is run which invokes the `onFulfilled()` callback of `then#2`. This settles `promise#3` which enqueues `microtask#4`. TBC
 
 2. Consume an immediately rejected asynchronous promise in a chain.
 

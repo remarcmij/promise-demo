@@ -47,6 +47,7 @@ export class AsyncPromise {
       if (this.#state === 'pending') {
         this.#state = 'fulfilled';
         this.#value = value;
+        console.log(`[promise ${this.#id} fulfilled]`);
         this.#fulfilledHandlers.forEach((handler) => handler());
       }
     };
@@ -55,6 +56,7 @@ export class AsyncPromise {
       if (this.#state === 'pending') {
         this.#state = 'rejected';
         this.#reason = reason;
+        console.log(`[promise ${this.#id} rejected]`);
         this.#rejectedHandlers.forEach((handler) => handler());
       }
     };
@@ -64,8 +66,6 @@ export class AsyncPromise {
     } catch (err) {
       reject(err);
     }
-
-    console.log(`[promise#${this.#id} ${this.#state}]`);
   }
 
   #fulfilledHandler(resolve, reject, onFulfilled) {

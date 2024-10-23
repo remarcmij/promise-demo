@@ -2,18 +2,18 @@
 
 This repository features two example promise implementations, for demo purposes only.
 
-## Example Promise implementations
+## Example Promise Implementations
 
-The first implementation (`sync-promise`) is the simplest. It is a synchronous implementation truly for demo use only and does not work for asynchronous events.
+The first implementation (`sync-promise.js`) is the simplest. It is a synchronous version truly for demo use only and does not work in conjunction with asynchronous events. (And consequently, essentially useless for practical purposes.)
 
-The second implementation (`async-promise`) is an asynchronous version that uses microtasks. This version follows mimics more closely (but not fully) the native `Promise` implementation, as specified in the [Promises/A+](https://promisesaplus.com/) standard.
+The second implementation (`async-promise.js`) is an asynchronous version that utilizes microtasks. This version mimics more closely (but not fully) the native `Promise` implementation that conforms to the [Promises/A+](https://promisesaplus.com/) standard.
 
 `Promise` implementations in folder `promises`:
 
-| File             | Description                            |
-| ---------------- | -------------------------------------- |
-| sync-promise.js  | Synchronous Promise implementation.    |
-| async-promise.js | Asynchronous `Promise` implementation. |
+| File             | Description                          |
+| ---------------- | ------------------------------------ |
+| sync-promise.js  | Synchronous Promise implementation.  |
+| async-promise.js | Asynchronous Promise implementation. |
 
 ## Example Promise consumers
 
@@ -27,13 +27,11 @@ Example `Promise` consumers in root folder:
 | 4-all-chain.js   | Example: `Promise.all().then(...).catch()` |
 | 5-all-await.js   | Example: `await Promise.all()`             |
 
-The example code these files should be studied in order to make sense of the produced console output.
+To run a command from a terminal window, type `node` follow by a space and the starting number of the example file name, then press the <kbd>Tab</kbd>key for auto-completion, followed by another space and finally the `<option>` number expected by the command.
 
-To run a command from a terminal window, type `node` follow by a space and the starting number of the example file name, then press the <kbd>Tab</kbd>key for auto-completion, followed by another space and finally the `<option>` expected by the command.
+## Promise Chain Examples
 
-### Promise chain
-
-All promise chain examples have this code in common:
+The promise chain examples 1 & 2 have this code in common:
 
 ```js
 function main(option) {
@@ -68,9 +66,9 @@ function main(option) {
 node 1-sync-chain <option>
 ```
 
-Where `<option>` is a number.
+Where `<option>` is a number from the bullet list below.
 
-1. Consume an immediately resolved synchronous in a chain.
+1. Consume an immediately resolved **synchronous** promise.
 
    ```text
    <<< main starting >>>
@@ -80,9 +78,9 @@ Where `<option>` is a number.
    <<< main ending >>>
    ```
 
-   Note that the `main()` function exits after completion of the promise chain. This is because of the synchronous nature of this promise implementation.
+   Notice that the `main()` function exits after completion of the promise chain. This is because of the synchronous nature of this promise implementation.
 
-2. Consume an immediately rejected synchronous in a chain.
+2. Consume an immediately rejected **synchronous** in a chain.
 
    ```text
    <<< main starting >>>
@@ -93,6 +91,8 @@ Where `<option>` is a number.
 
    As before, the `main()` function exists after completion of the promise chain.
 
+_All remaining examples use custom asynchronous promises imported from_ `async-promise.js`.
+
 ### 2-async-chain.js
 
 ```text
@@ -101,7 +101,7 @@ node 2-async-chain <option>
 
 With `<option>`:
 
-0. Consume an asynchronous promise that remains pending in a chain.
+0. Consume an indefinitely pending promise in a chain.
 
    ```text
    <<< main starting >>>
@@ -114,9 +114,9 @@ With `<option>`:
    <<< main ending >>>
    ```
 
-   Note: the initial promise#1 and all subsequent promises created by the `.then()` and `.catch()` methods in the chain remain pending.
+   Note: the initial `promise#1` and all subsequent promises created by the `.then()` and `.catch()` methods in the chain remain pending indefinitely.
 
-1. Consume an immediately resolved asynchronous promise in a chain.
+1. Consume an immediately resolved promise in a chain.
 
    ```text
    <<< main starting >>>
@@ -152,14 +152,12 @@ With `<option>`:
    [microtask#5 exit]
    ```
 
-   Notes:
+   Discussion:
 
-   1. The immediately resolved promise#1 enqueues microtask#1 while still within `main()`.
-   2. The pending promises #2-6 are created by the calls to the `then()` and `catch()` methods in the chain and are settled later, after `main()` has run to completion.
-   3. Microtasks #1-2 each invoke a `.then(onFulfilled)` callback and then enqueue a microtask for the promise returned by `.then()`.
-   4. Microtasks #3-4 are associated with the `.catch()` methods in the chain. There are no `onFulfilled()` callbacks to call, only a microtask to enqueue to continue the chain.
-   5. Microtask #5 invokes the `onFulfilled()` callback of the last `.then()`.
-   6. Promise #6 is a final promise returned by the promise chain itself. Because it is never consumed with a `.then()` or `.catch()` there is no associated microtask.
+   1. The immediately resolved `promise#1` enqueues `microtask#1` during the execution of `main()`.
+   2. The pending promises `promise#2`...`promise#6` are created by the calls to the `then()` and `catch()` methods in the chain and are settled later, after `main()` has run to completion.
+   3. The settling of the initial promise causes `microtask#1` to be enqueued.
+   4. Once `main()` has run to completion (i.e. exited), the JavaScript engine takes `microtask#1` off the microtask queue and invokes the `onFulfilled()` callback of the first `.then()`. 4. Both `microtask#1` and `microtask#2` invoke a `.then(onFulfilled)` callback and then enqueue a microtask for the promise returned by `.then()`. 5. Microtasks #3-4 are associated with the `.catch()` methods in the chain. There are no `onFulfilled()` callbacks to call, only a microtask to enqueue to continue the chain. 6. Microtask #5 invokes the `onFulfilled()` callback of the last `.then()`. 7. Promise #6 is a final promise returned by the promise chain itself. Because it is never consumed with a `.then()` or `.catch()` there is no associated microtask.
 
 2. Consume an immediately rejected asynchronous promise in a chain.
 

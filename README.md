@@ -304,7 +304,7 @@ Promise.all()
 
 With `<option>`:
 
-1. Consume an array of deferred resolved promises.
+1. Consume an array of delayed resolved promises.
 
    ```text
    <<< main starting >>>
@@ -338,7 +338,7 @@ With `<option>`:
 
    1. `Promise.all()` calls `.then()` on each promise of the array behind the scenes. Each call to `.then()` creates a new promise resulting in promises #5-8. Since these additional promises remain unconsumed there are no associated microtasks.
 
-2. Consume an array of deferred rejected promises.
+2. Consume an array of delayed rejected promises.
 
 ```text
 <<< main starting >>>

@@ -2,7 +2,7 @@
   "name": "promise-demo",
   "version": "1.0.0",
   "description": "Example promise implementations for demo purposes only",
-  "main": "chain.js",
+  "main": "2-async-chain.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

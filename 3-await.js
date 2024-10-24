@@ -1,10 +1,10 @@
-import { createPromise } from './helpers/createPromise.js';
+import { createPromise } from './helpers/helpers.js';
 
-async function main(option) {
+async function main(number) {
   console.log('<<< main starting >>>');
 
   try {
-    const value = await createPromise(option);
+    const value = await createPromise(number);
     console.log('value:', value);
   } catch (err) {
     console.log('error:', err.message);

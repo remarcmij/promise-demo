@@ -1,19 +1,22 @@
 import { SyncPromise as Promise } from './promises/sync-promise.js';
 
-function main(option) {
-  console.log('<<< main starting >>>');
-
-  const p = new Promise((resolve, reject) => {
-    if (option === 1) {
+function createPromise(number) {
+  return new Promise((resolve, reject) => {
+    if (number === 1) {
       resolve();
-    } else if (option === 2) {
+    } else if (number === 2) {
       reject();
     }
   });
+}
 
-  p.then(() => {
-    console.log('>> then#1');
-  })
+function main(number) {
+  console.log('<<< main starting >>>');
+
+  createPromise(number)
+    .then(() => {
+      console.log('>> then#1');
+    })
     .then(() => {
       console.log('>> then#2');
     })

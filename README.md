@@ -1,12 +1,12 @@
 # promise-demo
 
-This repository features two example promise implementations, for demo purposes only.
+This repository features two example promise implementations, for demo purposes only. The more advanced implementation uses [microtasks](https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide) and logs important events to the console while processing each promise. This may help to deepen your understanding of how promises work. (Or it did at least do so for the author :smiley:.)
 
 ## Example Promise Implementations
 
-The first implementation (`sync-promise.js`) is the simplest. It is a synchronous version truly for demo use only and does not work in conjunction with asynchronous events. (And consequently, essentially useless for practical purposes.)
+The first implementation (`sync-promise.js`) is the simplest. It is a synchronous version truly for demo use only and does not work in conjunction with asynchronous events. Consequently, it is essentially useless for practical purposes, but its implementation is relatively easy to follow (check out `sync-promise.js` in the `promises` folder).
 
-The second implementation (`async-promise.js`) is an asynchronous version that utilizes microtasks. This version mimics more closely (but not fully) the native `Promise` implementation that conforms to the [Promises/A+](https://promisesaplus.com/) standard.
+The second implementation (`async-promise.js`) is an asynchronous version that utilizes microtasks. This version mimics more closely (but likely not fully) the native `Promise` implementation that conforms to the [Promises/A+](https://promisesaplus.com/) standard. The code is complicated and not intended here for further discussion. Its value is in the console output it produces as each promise is evaluated.
 
 `Promise` implementations in folder `promises`:
 
@@ -27,22 +27,20 @@ Example `Promise` consumers in root folder:
 | 4-all-chain.js   | Example: `Promise.all().then(...).catch()` |
 | 5-all-await.js   | Example: `await Promise.all()`             |
 
-To run a command from a terminal window, type `node` follow by a space and the starting number of the example file name, then press the <kbd>Tab</kbd>key for auto-completion, followed by another space and finally the `<option>` number expected by the command.
+To run a command from a terminal window, type `node` follow by a space and the starting number of the example file name, then press the <kbd>Tab</kbd>key for auto-completion, followed by another space and finally the number expected by the command.
 
 ## Promise Chain Examples
 
-The promise chain examples 1 & 2 have this code in common:
+The promise chain examples `1-sync-chain`  & `2-async-chain` have this code in common:
 
 ```js
-function main(option) {
+function main(number) {
   console.log('<<< main starting >>>');
 
-  // Create a promise corresponding to <option>
-  const p = new Promise(...);
-
-  p.then(() => {
-    console.log('>> then#1');
-  })
+  createPromise(number)
+    .then(() => {
+      console.log('>> then#1');
+    })
     .then(() => {
       console.log('>> then#2');
     })
@@ -63,469 +61,651 @@ function main(option) {
 ### 1-sync-chain.js
 
 ```text
-node 1-sync-chain <option>
+node 1-sync-chain <number>
 ```
 
-Where `<option>` is a number from the bullet list below.
+Where `<number>` is 1 or 2.
 
-1. Consume an immediately resolved **synchronous** promise.
+#### `node 1-sync-chain 1`
 
-   ```text
-   <<< main starting >>>
-   >> then#1
-   >> then#2
-   >> then#5
-   <<< main ending >>>
-   ```
+Consume an immediately resolved **synchronous** promise.
 
-   Notice that the `main()` function exits after completion of the promise chain. This is because of the synchronous nature of this promise implementation.
+```text
+<<< main starting >>>
+>> then#1
+>> then#2
+>> then#5
+<<< main ending >>>
+```
 
-2. Consume an immediately rejected **synchronous** in a chain.
+Notice that the `main()` function exits after completion of the promise chain. This is because of the synchronous nature of this promise implementation.
 
-   ```text
-   <<< main starting >>>
-   >> catch#3
-   >> then#5
-   <<< main ending >>>
-   ```
+#### node 1-sync-chain 2
 
-   As before, the `main()` function exists after completion of the promise chain.
+Consume an immediately rejected **synchronous** in a chain.
 
-_All remaining examples use custom asynchronous promises imported from_ `async-promise.js`.
+```text
+<<< main starting >>>
+>> catch#3
+>> then#5
+<<< main ending >>>
+```
+
+Note: All remaining examples use the `AsyncPromise` class imported from `async-promise.js`.
 
 ### 2-async-chain.js
 
 ```text
-node 2-async-chain <option>
+node 2-async-chain <number>
 ```
 
-With `<option>`:
+Where `<number>` is 0, 1, 2, 3 or 4.
 
-0. Consume an indefinitely pending promise in a chain.
+#### `node 2-async-chain 0`
 
-   ```text
-   <<< main starting >>>
-   [promise#1 pending]
-   [promise#2 pending]
-   [promise#3 pending]
-   [promise#4 pending]
-   [promise#5 pending]
-   [promise#6 pending]
-   <<< main ending >>>
-   ```
+Consume an indefinitely pending promise in a chain.
 
-   Note: the initial `promise#1` and all subsequent promises created by the `.then()` and `.catch()` methods in the chain remain pending indefinitely.
+```text
+<<< main starting >>>
+[promise#1 pending]
+[promise#2 pending]
+[promise#3 pending]
+[promise#4 pending]
+[promise#5 pending]
+[promise#6 pending]
+<<< main ending >>>
+```
 
-1. Consume an immediately resolved promise in a chain.
+The initial `promise#1` is not programmatically settled and hence all subsequent promises created by the `.then()` and `.catch()` methods in the chain remain pending indefinitely.
 
-   ```text
-   <<< main starting >>>
-   [promise#1 fulfilled]
-   [enqueue microtask#1]
-   [promise#2 pending]
-   [promise#3 pending]
-   [promise#4 pending]
-   [promise#5 pending]
-   [promise#6 pending]
-   <<< main ending >>>
+#### `node 2-async-chain 1`
 
-   [microtask#1 start]
-   >> then#1
-   [enqueue microtask#2]
-   [microtask#1 exit]
+A promise chain that consumes an immediately resolved promise.
 
-   [microtask#2 start]
-   >> then#2
-   [enqueue microtask#3]
-   [microtask#2 exit]
+In total 6 promises are created. The first promise is created explicitly by a call to `createPromise()`. The remaining promises are created synchronously as `pending` promises by the `.then()` and `.catch()` methods in the chain. These methods register their `onFulfilled()` and `onRejected()` callbacks inside the promise they create for later execution.
 
-   [microtask#3 start]
-   [enqueue microtask#4]
-   [microtask#3 exit]
+The promise return by the promise chain is `promise#6`, which in the example code remains unused.
 
-   [microtask#4 start]
-   [enqueue microtask#5]
-   [microtask#4 exit]
+| promise     | created by        |
+| ----------- | ----------------- |
+| `promise#1` | `createPromise()` |
+| `promise#2` | `.then() #1`      |
+| `promise#3` | `.then() #2`      |
+| `promise#4` | `.catch() #3`     |
+| `promise#5` | `.catch() #4`     |
+| `promise#6` | `.then() #5`      |
 
-   [microtask#5 start]
-   >> then#5
-   [microtask#5 exit]
-   ```
+```text
+<<< main starting >>>
+[promise#1 fulfilled]
+[enqueue microtask#1]
+[promise#2 pending]
+[promise#3 pending]
+[promise#4 pending]
+[promise#5 pending]
+[promise#6 pending]
+<<< main ending >>>
 
-   Discussion:
+[microtask#1 start]
+>> then#1
+[promise#2 fulfilled]
+[enqueue microtask#2]
+[microtask#1 exit]
 
-   1. The immediately resolved `promise#1` enqueues `microtask#1` during the execution of `main()`.
-   2. The pending promises `promise#2` to `promise#6` are created by the calls to the `then()` and `catch()` methods in the chain and are settled later, after `main()` has run to completion.
-   3. The settling of the initial promise causes `microtask#1` to be enqueued.
-   4. Once `main()` has run to completion (i.e. exited), the JavaScript engine runs `microtask#1` which invokes the `onFulfilled()` callback of the `then#1`. This settles `promise#2` which enqueues `microtask#2`.
-   5. When `microtask#1` has run to completion `microtask#2` is run which invokes the `onFulfilled()` callback of `then#2`. This settles `promise#3` which enqueues `microtask#4`. TBC
+[microtask#2 start]
+>> then#2
+[promise#3 fulfilled]
+[enqueue microtask#3]
+[microtask#2 exit]
 
-2. Consume an immediately rejected asynchronous promise in a chain.
+[microtask#3 start]
+[promise#4 fulfilled]
+[enqueue microtask#4]
+[microtask#3 exit]
 
-   ```text
-   <<< main starting >>>
-   [promise#1 rejected]
-   [enqueue microtask#1]
-   [promise#2 pending]
-   [promise#3 pending]
-   [promise#4 pending]
-   [promise#5 pending]
-   [promise#6 pending]
-   <<< main ending >>>
+[microtask#4 start]
+[promise#5 fulfilled]
+[enqueue microtask#5]
+[microtask#4 exit]
 
-   [microtask#1 start]
-   [enqueue microtask#2]
-   [microtask#1 exit]
+[microtask#5 start]
+>> then#5
+[promise#6 fulfilled]
+[microtask#5 exit]
+```
 
-   [microtask#2 start]
-   [enqueue microtask#3]
-   [microtask#2 exit]
+Discussion:
 
-   [microtask#3 start]
-   >> catch#3
-   [enqueue microtask#4]
-   [microtask#3 exit]
+1. The immediately resolved `promise#1` enqueues `microtask#1` during the execution of `main()`. The pending promises `promise#2` up to `promise#6` are created synchronously by the calls to the `then()` and `catch()` methods in the chain and will be settled later, after `main()` has run to completion.
 
-   [microtask#4 start]
-   [enqueue microtask#5]
-   [microtask#4 exit]
+2. Once `main()` has exited the JavaScript engine picks up and runs `microtask#1` from the microtask queue. In turn, `microtask#1` invokes the `onFulfilled()` callback of the first `.then()` method in the chain. The return value of the `onFulfilled()` callback is used as to fulfill `promise#2`, which subsequently causes `microtask#2` to be enqueued. This completes the execution of `microtask#1`.
 
-   [microtask#5 start]
-   >> then#5
-   [microtask#5 exit]
-   ```
+3. Next, the JavaScript engine picks up `microtask#2` from the microtask queue. It follows the same process as describe above, but now for the second `.then()` in the chain.
 
-   Notes:
+4. The first `.catch()` methods in the chain is executed by `microtask#3`. By design, a `.catch()` method has no `onFulfilled()` method (i.e. it is `null`). Instead it has an `onRejected()` callback. It is not called in this case as the incoming promise is fulfilled. Therefore `microtask#3` simply enqueues a new microtask for the next method in the chain. In this case, `microtask#4` for the second `.catch()` in the chain.
 
-   1. Microtasks #1-2 are handled by the first two `.then()` methods. As each of them has no `onRejected()` callback to call only a new microtask enqueued to continue the chain. So, microtask#3 is created by the second `.then()`.
-   2. Microtask #3 executes the `onRejected()` callback from the first `.catch()`. This callback happens to return `undefined` hence a promise that resolves to `undefined`.
-   3. As the second `.catch()` has no `onFulfilled()` callback microtask#1
-   4. Microtask #5 is handled by the final `.then()` and receives the resolved value returns a resolved promise (it resolves to `undefined`). Therefore microtask#4
+5. When `microtask#4` is picked up and executed, the same process as in the previous step is followed for the second `.catch()` in the chain. Eventually `microtask#5` is enqueued.
 
-3. Consume an delayed resolved promise in a chain.
+6. When `microtask#5` is executed it invokes the `onFulfilled()` callback of the last `.then()` method in the chain.
 
-   ```text
-   <<< main starting >>>
-   [promise#1 pending]
-   [promise#2 pending]
-   [promise#3 pending]
-   [promise#4 pending]
-   [promise#5 pending]
-   [promise#6 pending]
-   <<< main ending >>>
-   .
-   . (2 second delay)
-   .
-   [enqueue microtask#1]
+7. Since there are no further methods in the chain and no consumer for `promise#6` the process stops here.
 
-   [microtask#1 start]
-   >> then#1
-   [enqueue microtask#2]
-   [microtask#1 exit]
+#### `node 2-async-chain 2`
 
-   [microtask#2 start]
-   >> then#2
-   [enqueue microtask#3]
-   [microtask#2 exit]
+A promise chain that consumes a promise that is resolved some time later.
 
-   [microtask#3 start]
-   [enqueue microtask#4]
-   [microtask#3 exit]
+```text
+<<< main starting >>>
+[promise#1 pending]
+[promise#2 pending]
+[promise#3 pending]
+[promise#4 pending]
+[promise#5 pending]
+[promise#6 pending]
+<<< main ending >>>
+.
+. (2 second delay)
+.
+[promise#1 fulfilled]
+[enqueue microtask#1]
 
-   [microtask#4 start]
-   [enqueue microtask#5]
-   [microtask#4 exit]
+[microtask#1 start]
+>> then#1
+[promise#2 fulfilled]
+[enqueue microtask#2]
+[microtask#1 exit]
 
-   [microtask#5 start]
-   >> then#5
-   [microtask#5 exit]
-   ```
+[microtask#2 start]
+>> then#2
+[promise#3 fulfilled]
+[enqueue microtask#3]
+[microtask#2 exit]
 
-   Notes:
+[microtask#3 start]
+[promise#4 fulfilled]
+[enqueue microtask#4]
+[microtask#3 exit]
 
-   1. All promises, including #1 remain `pending` within function `main()`.
-   2. The chain becomes active when the initial promise is settled after a 2 second delay.
+[microtask#4 start]
+[promise#5 fulfilled]
+[enqueue microtask#5]
+[microtask#4 exit]
 
-4. Consume an delayed rejected promise in a chain.
+[microtask#5 start]
+>> then#5
+[promise#6 fulfilled]
+[microtask#5 exit]
+```
 
-   ```text
-   <<< main starting >>>
-   [promise#1 pending]
-   [promise#2 pending]
-   [promise#3 pending]
-   [promise#4 pending]
-   [promise#5 pending]
-   [promise#6 pending]
-   <<< main ending >>>
-   .
-   . (2 second delay)
-   .
-   [enqueue microtask#1]
+Discussion:
 
-   [microtask#1 start]
-   [enqueue microtask#2]
-   [microtask#1 exit]
+This is similar to the previous example, but now `promise#1` begins as pending promise.
 
-   [microtask#2 start]
-   [enqueue microtask#3]
-   [microtask#2 exit]
+#### `node 2-async-chain 3`
 
-   [microtask#3 start]
-   >> catch#3
-   [enqueue microtask#4]
-   [microtask#3 exit]
+A promise chain that consumes an immediately rejected promise.
 
-   [microtask#4 start]
-   [enqueue microtask#5]
-   [microtask#4 exit]
+```text
+<<< main starting >>>
+[promise#1 rejected]
+[enqueue microtask#1]
+[promise#2 pending]
+[promise#3 pending]
+[promise#4 pending]
+[promise#5 pending]
+[promise#6 pending]
+<<< main ending >>>
 
-   [microtask#5 start]
-   >> then#5
-   [microtask#5 exit]
-   ```
+[microtask#1 start]
+[promise#2 rejected]
+[enqueue microtask#2]
+[microtask#1 exit]
 
-   Same as previous example, but now for a rejected promise.
+[microtask#2 start]
+[promise#3 rejected]
+[enqueue microtask#3]
+[microtask#2 exit]
+
+[microtask#3 start]
+>> catch#3
+[promise#4 fulfilled]
+[enqueue microtask#4]
+[microtask#3 exit]
+
+[microtask#4 start]
+[promise#5 fulfilled]
+[enqueue microtask#5]
+[microtask#4 exit]
+
+[microtask#5 start]
+>> then#5
+[promise#6 fulfilled]
+[microtask#5 exit]
+```
+
+Discussion:
+
+1. In the case of an rejected promise the `onFulfilled()` callbacks of the `.then()` methods in the chain are bypassed until the first `.catch()` method is encountered. Its `onRejected()` callback is called which happens to return `undefined`, which becomes the fulfillment value its promise (`promise#4`).
+
+2. Because the second `.catch()` now sees a fulfilled promise, its `onRejected()` callback is bypassed and it simply forwards the fulfillment value of the previous promise.
+
+3. The last `.then()` in the chain sees a fulfilled promise and therefore calls its `onFulfilled()` callback. This ends the process.
+
+#### `node 2-async-chain 4`
+
+A promise chain that consumes a promise that is rejected some time later.
+
+```text
+<<< main starting >>>
+[promise#1 pending]
+[promise#2 pending]
+[promise#3 pending]
+[promise#4 pending]
+[promise#5 pending]
+[promise#6 pending]
+<<< main ending >>>
+.
+. (2 second delay)
+.
+[promise#1 rejected]
+[enqueue microtask#1]
+
+[microtask#1 start]
+[promise#2 rejected]
+[enqueue microtask#2]
+[microtask#1 exit]
+
+[microtask#2 start]
+[promise#3 rejected]
+[enqueue microtask#3]
+[microtask#2 exit]
+
+[microtask#3 start]
+>> catch#3
+[promise#4 fulfilled]
+[enqueue microtask#4]
+[microtask#3 exit]
+
+[microtask#4 start]
+[promise#5 fulfilled]
+[enqueue microtask#5]
+[microtask#4 exit]
+
+[microtask#5 start]
+>> then#5
+[promise#6 fulfilled]
+[microtask#5 exit]
+```
+
+Discussion:
+
+This is similar to the previous example, but now `promise#1` begins as pending promise.
 
 ### 3-await.js
 
-```text
-node 3-await <option>
-```
-
-With `<option>`:
-
-1. Consume an delayed resolved promise using `await`.
-
-   ```text
-   <<< main starting >>>
-   [promise#1 pending]
-   .
-   . (2 second delay)
-   .
-   [promise#2 pending]
-   [enqueue microtask#1]
-
-   [microtask#1 start]
-   [microtask#1 exit]
-   value: 42
-   <<< main ending >>>
-   ```
-
-   Notes:
-
-   1. The `main()` function is suspended while awaiting promise#1 to settle.
-   2. When promise#1 resolves the `main()` resumes and outputs the resolved value.
-   3. Promise #2 is a promise created a `.then()` call created behind the scenes by the `await` keyword and remains unconsumed.
-
-2. Consume an delayed rejected promise using `await`.
-
-   ```text
-   <<< main starting >>>
-   [promise#1 pending]
-   [promise#2 pending]
-   [enqueue microtask#1]
-   .
-   . (2 second delay)
-   .
-   [microtask#1 start]
-   [microtask#1 exit]
-   error: Oops...
-   <<< main ending >>>
-   ```
-
-   Notes:
-
-   1. The `main()` function is suspended while awaiting promise#1 to settle.
-   2. When promise#1 rejects the `main()` function resumes and, through its catch block, outputs the rejected error.
-
-### 4-all-chain.js
-
-```text
-node 4-all-chain <option>
-```
-
-Using:
+Example code:
 
 ```js
-Promise.all()
-  .then(...)
-  .catch(...)
-```
+async function main(number) {
+  console.log('<<< main starting >>>');
 
-With `<option>`:
+  try {
+    const value = await createPromise(number);
+    console.log('value:', value);
+  } catch (err) {
+    console.log('error:', err.message);
+  }
 
-1. Consume an array of delayed resolved promises.
-
-   ```text
-   <<< main starting >>>
-   [promise#1 pending]
-   [promise#2 pending]
-   [promise#3 pending]
-   [promise#4 pending]
-   <<< main ending >>>
-   [promise#5 pending]
-   [promise#6 pending]
-   [promise#7 pending]
-   [promise#8 pending]
-   .
-   . (2 second delay)
-   .
-   [enqueue microtask#1]
-
-   [microtask#1 start]
-   [microtask#1 exit]
-   [enqueue microtask#2]
-
-   [microtask#2 start]
-   [microtask#2 exit]
-   [enqueue microtask#3]
-
-   [microtask#3 start]
-   [microtask#3 exit]
-   [enqueue microtask#4]
-
-   [microtask#4 start]
-   [microtask#4 exit]
-   results: [ 42, 42, 42, 42 ]
-   ```
-
-   Notes:
-
-   1. `Promise.all()` internally calls `.then()` on each promise in the array. Each call to `.then()` creates a new promise resulting in promises #5-8. Since these additional promises remain unconsumed there are no associated microtasks.
-   2. Microtasks #1-4 start execution after `main()` has run to completion.
-
-2. Consume an array of delayed rejected promises.
-
-   ```text
-   <<< main starting >>>
-   [promise#1 pending]
-   [promise#2 pending]
-   [promise#3 pending]
-   [promise#4 pending]
-   <<< main ending >>>
-   [promise#5 pending]
-   [promise#6 pending]
-   [promise#7 pending]
-   [promise#8 pending]
-   .
-   . (2 second delay)
-   .
-   [enqueue microtask#1]
-
-   [microtask#1 start]
-   [microtask#1 exit]
-   error: Oops...
-   [enqueue microtask#2]
-
-   [microtask#2 start]
-   [microtask#2 exit]
-   [enqueue microtask#3]
-
-   [microtask#3 start]
-   [microtask#3 exit]
-   [enqueue microtask#4]
-
-   [microtask#4 start]
-   [microtask#4 exit]
-   ```
-
-   As in the previous example, but now for a rejected promise.
-
-### 5-all-await.js
-
-```text
-node 4-all-await <option>
-```
-
-Using:
-
-```js
-try {
-  const results = await Promise.all(...);
-  ...
-} catch(err) {
-  ...
+  console.log('<<< main ending >>>');
 }
 ```
 
-With `<option>`:
+The `createPromise()` helper function creates a promise is settled after a two second delay. If `number` is 1 it returns a promise that is resolved to the value `42`. If `number` is 2 it returns a promise that is rejected with an `Error` object as its rejection value.
 
-1. Consume an array of delayed resolved promises.
+#### `node 3-wait 1`
 
-   ```text
-   <<< main starting >>>
-   [promise#1 pending]
-   [promise#2 pending]
-   [promise#3 pending]
-   [promise#4 pending]
-   [promise#5 pending]
-   [promise#6 pending]
-   [promise#7 pending]
-   [promise#8 pending]
-   .
-   . (2 second delay)
-   .
-   [enqueue microtask#1]
+Consume a promise that is resolved some time later, using `await`.
 
-   [microtask#1 start]
-   [microtask#1 exit]
-   [enqueue microtask#2]
+```text
+<<< main starting >>>
+[promise#1 pending]
+[promise#2 pending]
+.
+. (2 second delay)
+.
+[promise#1 fulfilled]
+[enqueue microtask#1]
 
-   [microtask#2 start]
-   [microtask#2 exit]
-   [enqueue microtask#3]
+[microtask#1 start]
+[promise#2 fulfilled]
+[microtask#1 exit]
+value: 42
+<<< main ending >>>
+```
 
-   [microtask#3 start]
-   [microtask#3 exit]
-   [enqueue microtask#4]
+Discussion:
 
-   [microtask#4 start]
-   [microtask#4 exit]
-   results: [ 42, 42, 42, 42 ]
-   <<< main ending >>>
-   ```
+1. The `main()` function is suspended while awaiting `promise#1`.
+2. When `promise#1` fulfills the `main()` function resumes and outputs the resolved value.
+3. Promise #2 is a promise created a `.then()` call created internally by the `await` keyword and remains unconsumed.
 
-   Notes:
+#### `node 3-wait 2`
 
-   1. The `main()` function is suspended while awaiting the promise returned by `Promise.all()`.
-   2. Promises #5-8 are created internally by `Promise.all()` and remain unconsumed.
+Consume a promise that is rejected some time later, using `await`.
 
-2. Consume an array of delayed rejected promises.
+```text
+<<< main starting >>>
+[promise#1 pending]
+[promise#2 pending]
+.
+. (2 second delay)
+.
+[promise#1 rejected]
+[enqueue microtask#1]
 
-   ```text
-   <<< main starting >>>
-   [promise#1 pending]
-   [promise#2 pending]
-   [promise#3 pending]
-   [promise#4 pending]
-   [promise#5 pending]
-   [promise#6 pending]
-   [promise#7 pending]
-   [promise#8 pending]
-   .
-   . (2 second delay)
-   .
-   [enqueue microtask#1]
+[microtask#1 start]
+[promise#2 fulfilled]
+[microtask#1 exit]
+error: Oops... Something went wrong!
+<<< main ending >>>
+<<< main ending >>>
+```
 
-   [microtask#1 start]
-   [microtask#1 exit]
-   error: Oops...
-   <<< main ending >>>
-   [enqueue microtask#2]
+Discussion:
 
-   [microtask#2 start]
-   [microtask#2 exit]
-   [enqueue microtask#3]
+1. The `main()` function is suspended while awaiting `promise#1` to settle.
+2. When `promise#1` rejects the `main()` function resumes and, through its catch block, outputs the rejected error.
 
-   [microtask#3 start]
-   [microtask#3 exit]
-   [enqueue microtask#4]
+### 4-all-chain.js
 
-   [microtask#4 start]
-   [microtask#4 exit]
-   ```
+Example code:
 
-   Notes:
+```js
+function main(number) {
+  console.log('<<< main starting >>>');
 
-   1. The first rejected promise (#1) causes the `main()` function to resume running its `catch` block. It then runs to completion and exits. The microtasks of remaining (rejected) promises #3-4 will still execute.
-   2. Promises #5-8 are created internally by `Promise.all()` and remain unconsumed.
+  const promises = [createPromise(number), createPromise(number)];
+
+  Promise.all(promises)
+    .then((results) => console.log('results:', results))
+    .catch((err) => console.log('error:', err.message));
+
+  console.log('<<< main ending >>>');
+}
+```
+
+The same `createPromise()` helper function from the previous examples is used here.
+
+#### `node 4-all-chain 1`
+
+Using a `Promise.all()` chain, consume an array of two promises that are resolved some time later.
+
+There are a lot of promises created here:
+
+| promise     | created by |
+| ----------- | ---------- |
+| `promise#1` | First call to `createPromise()` |
+| `promise#2` | Second call to `createPromise()` |
+| `promise#3` | Promise returned by `Promise.all()` |
+| `promise#4` | `.then()` called on `promise#1` inside `Promise.all()` |
+| `promise#5` | `.catch()` called on `promise#1` inside `Promise.all()` |
+| `promise#6` | `.then()` called on `promise#2` inside `Promise.all()` |
+| `promise#7` | `.catch()` called on `promise#2` inside `Promise.all()` |
+| `promise#8` | `.then()` inside function `main()` |
+| `promise#9` | `.catch()` inside function `main()` |
+
+```text
+<<< main starting >>>
+[promise#1 pending]
+[promise#2 pending]
+[promise#4 pending]
+[promise#5 pending]
+[promise#6 pending]
+[promise#7 pending]
+[promise#3 pending]
+[promise#8 pending]
+[promise#9 pending]
+<<< main ending >>>
+.
+. (2 second delay)
+.
+[promise#1 fulfilled]
+[enqueue microtask#1]
+
+[microtask#1 start]
+[promise#4 fulfilled]
+[enqueue microtask#4]
+[microtask#1 exit]
+
+[microtask#4 start]
+[promise#5 fulfilled]
+[microtask#4 exit]
+[promise#2 fulfilled]
+[enqueue microtask#2]
+
+[microtask#2 start]
+[promise#3 fulfilled]
+[enqueue microtask#3]
+[promise#6 fulfilled]
+[enqueue microtask#6]
+[microtask#2 exit]
+
+[microtask#3 start]
+>>> results: [ 42, 42 ]
+[promise#8 fulfilled]
+[enqueue microtask#8]
+[microtask#3 exit]
+
+[microtask#6 start]
+[promise#7 fulfilled]
+[microtask#6 exit]
+
+[microtask#8 start]
+[promise#9 fulfilled]
+[microtask#8 exit]
+```
+
+Discussion:
+
+#### `node 4-all-chain 2`
+
+Using a `Promise.all()` chain, consume an array of two promises that are rejected some time later.
+
+```text
+<<< main starting >>>
+[promise#1 pending]
+[promise#2 pending]
+[promise#4 pending]
+[promise#5 pending]
+[promise#6 pending]
+[promise#7 pending]
+[promise#3 pending]
+[promise#8 pending]
+[promise#9 pending]
+<<< main ending >>>
+.
+. (2 second delay)
+.
+[promise#1 rejected]
+[enqueue microtask#1]
+
+[microtask#1 start]
+[promise#4 rejected]
+[enqueue microtask#4]
+[microtask#1 exit]
+
+[microtask#4 start]
+[promise#3 rejected]
+[enqueue microtask#3]
+[promise#5 fulfilled]
+[microtask#4 exit]
+
+[microtask#3 start]
+[promise#8 rejected]
+[enqueue microtask#8]
+[microtask#3 exit]
+
+[microtask#8 start]
+>>> error: Oops... Something went wrong!
+[promise#9 fulfilled]
+[microtask#8 exit]
+[promise#2 rejected]
+[enqueue microtask#2]
+
+[microtask#2 start]
+[promise#6 rejected]
+[enqueue microtask#6]
+[microtask#2 exit]
+
+[microtask#6 start]
+[promise#7 fulfilled]
+[microtask#6 exit]
+```
+
+Discussion:
+
+### 5-all-await.js
+
+Example code:
+
+```js
+async function main(number) {
+  console.log('<<< main starting >>>');
+
+  try {
+    const promises = [createPromise(number), createPromise(number)];
+
+    const results = await Promise.all(promises);
+    console.log('results:', results);
+  } catch (err) {
+    console.log('error:', err.message);
+  }
+
+  console.log('<<< main ending >>>');
+}
+```
+
+### `node 5-all-await 1`
+
+Using an awaited `Promise.all()`, consume an array of two promises that are resolved some time later.
+
+The created promises are:
+
+| promise     | created by |
+| ----------- | ---------- |
+| `promise#1` | First call to `createPromise()` |
+| `promise#2` | Second call to `createPromise()` |
+| `promise#3` | Promise returned by `Promise.all()` |
+| `promise#4` | `.then()` called on `promise#1` inside `Promise.all()` |
+| `promise#5` | `.catch()` called on `promise#1` inside `Promise.all()` |
+| `promise#6` | `.then()` called on `promise#2` inside `Promise.all()` |
+| `promise#7` | `.catch()` called on `promise#2` inside `Promise.all()` |
+| `promise#8` | `await` inside function `main()` |
+
+```text
+<<< main starting >>>
+[promise#1 pending]
+[promise#2 pending]
+[promise#4 pending]
+[promise#5 pending]
+[promise#6 pending]
+[promise#7 pending]
+[promise#3 pending]
+[promise#8 pending]
+.
+. (2 second delay)
+.
+[promise#1 fulfilled]
+[enqueue microtask#1]
+
+[microtask#1 start]
+[promise#4 fulfilled]
+[enqueue microtask#4]
+[microtask#1 exit]
+
+[microtask#4 start]
+[promise#5 fulfilled]
+[microtask#4 exit]
+[promise#2 fulfilled]
+[enqueue microtask#2]
+
+[microtask#2 start]
+[promise#3 fulfilled]
+[enqueue microtask#3]
+[promise#6 fulfilled]
+[enqueue microtask#6]
+[microtask#2 exit]
+
+[microtask#3 start]
+[promise#8 fulfilled]
+[microtask#3 exit]
+
+[microtask#6 start]
+[promise#7 fulfilled]
+[microtask#6 exit]
+>>> results: [ 42, 42 ]
+<<< main ending >>>
+```
+
+Discussion:
+
+While doable, it would be a bit long-winding to discuss the output in detail. However, it is worth noting that the `main()` function waits for `Promise.all()` to resolve before exiting.
+
+### `node 5-all-await 2`
+
+Using an awaited `Promise.all()`, consume an array of two promises that are rejected some time later.
+
+The created promises are the same as in the previous example.
+
+```text
+<<< main starting >>>
+[promise#1 pending]
+[promise#2 pending]
+[promise#4 pending]
+[promise#5 pending]
+[promise#6 pending]
+[promise#7 pending]
+[promise#3 pending]
+[promise#8 pending]
+.
+. (2 second delay)
+.
+[promise#1 rejected]
+[enqueue microtask#1]
+
+[microtask#1 start]
+[promise#4 rejected]
+[enqueue microtask#4]
+[microtask#1 exit]
+
+[microtask#4 start]
+[promise#3 rejected]
+[enqueue microtask#3]
+[promise#5 fulfilled]
+[microtask#4 exit]
+
+[microtask#3 start]
+[promise#8 fulfilled]
+[microtask#3 exit]
+>>> error: Oops... Something went wrong!
+<<< main ending >>>
+[promise#2 rejected]
+[enqueue microtask#2]
+
+[microtask#2 start]
+[promise#6 rejected]
+[enqueue microtask#6]
+[microtask#2 exit]
+
+[microtask#6 start]
+[promise#7 fulfilled]
+[microtask#6 exit]
+```
+
+Discussion:
+
+1. The `main()` function exits when `Promise.all()` is settled by a rejection.
+
+2. Most promises are rejected. However, `promise#5` and `promise#7` are fulfilled with the return value (`undefined`) of the interval `.catch()` handlers of `Promise.all()`.
+
+3. The `catch {}` block inside function `main()` does not throw an error itself, therefore `promise#8` is settled as fulfilled.

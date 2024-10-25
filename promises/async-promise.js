@@ -1,8 +1,6 @@
-import { createLogger } from '../helpers/helpers.js';
+// Loosely based on: https://medium.com/swlh/implement-a-simple-promise-in-javascript-20c9705f197a
 
 const log = createLogger(true);
-
-// Loosely based on: https://medium.com/swlh/implement-a-simple-promise-in-javascript-20c9705f197a
 
 export class AsyncPromise {
   static resolve(value) {
@@ -149,7 +147,19 @@ export class AsyncPromise {
   }
 }
 
-// check for promise or promise-like result
-export const isThenable = (result) =>
-  ['object', 'function'].includes(typeof result) &&
-  typeof result.then === 'function';
+// Helper functions
+
+function isThenable(result) {
+  return (
+    ['object', 'function'].includes(typeof result) &&
+    typeof result.then === 'function'
+  );
+}
+
+function createLogger(showOutput = false) {
+  return (...args) => {
+    if (showOutput) {
+      console.log(...args);
+    }
+  };
+}

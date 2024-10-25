@@ -11,11 +11,3 @@ export function createPromise(option) {
     }, 2000);
   });
 }
-
-export function createLogger(showOutput = false) {
-  return (...args) => {
-    if (showOutput) {
-      console.log(...args);
-    }
-  };
-}

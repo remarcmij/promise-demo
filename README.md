@@ -1,10 +1,10 @@
 # promise-demo
 
-This repository features two example promise implementations, for demo purposes only. The more advanced implementation uses [microtasks](https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide) and logs important events to the console while processing each promise. This may help to deepen your understanding of how promises work. (Or it did at least do so for the author :smiley:.)
+This repository features two example promise implementations, for demo purposes only. The more advanced implementation uses [microtasks](https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide) and logs important events to the console while processing each promise. This may help to deepen your understanding of how promises work.
 
 ## Introduction
 
-In order to better understand the result output of each example it important to recollect some important characteristics of promises in JavaScript:
+In order to correctly interpret the result output of each example it is important to emphasize some important characteristics of promises in JavaScript:
 
 1. The `.then()` method can take [two callback parameters](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then#syntax), the second being optional:
 
@@ -23,9 +23,9 @@ In order to better understand the result output of each example it important to 
 
     In case of a rejected promise `onRejected`, i.e. the second callback parameter is called.
 
-3. Every `.then()` and `.catch()` method call on a promise creates and returns a new promise. These promises are created synchronously, but their callbacks are called asynchronously via a microtask when a promise is fulfilled or rejected.
+3. Every `.then()` and `.catch()` method call on a promise creates and returns a new promise. These promises are created synchronously, but their callbacks are called asynchronously using a microtask, at the instant that a promise is fulfilled or rejected.
 
-    In our custom promise implementation each new promise get assigned a sequence number, starting with 1. All promise events shown in the example output are tagged with the number of the currently executing promise, e.g.:
+    In our custom promise implementation, each new promise gets assigned a sequence number, starting with 1. All promise events shown in the example output are tagged with the number of the currently executing promise, e.g.:
 
     ```text
     [promise#1 fulfilled]
@@ -41,7 +41,7 @@ This YouTube video by Lydia Hallie, discussing the JavaScript event loop and whe
 
 The first implementation (`sync-promise.js`) is the simplest. It is a synchronous version truly for demo use only and does not work in conjunction with asynchronous events. Consequently, it is essentially useless for practical purposes, but its implementation is relatively easy to follow (check out `sync-promise.js` in the `promises` folder).
 
-The second implementation (`async-promise.js`) is an asynchronous version that utilizes microtasks. This version mimics more closely (but likely not fully) the native `Promise` implementation that conforms to the [Promises/A+](https://promisesaplus.com/) standard. The code is complicated and not intended here for further discussion. Its value is in the console output it produces as each promise is evaluated.
+The second implementation (`async-promise.js`) is an asynchronous version that utilizes microtasks. This version mimics more closely (but likely not fully) the native `Promise` implementation that conforms to the [Promises/A+](https://promisesaplus.com/) standard. The code is rather complicated and not intended for further discussion here. Its value lies in the console output it produces as each promise is executed.
 
 `Promise` implementations in folder `promises`:
 
@@ -62,7 +62,7 @@ Example `Promise` consumers in root folder:
 | 4-all-chain.js   | Example: `Promise.all().then(...).catch()` |
 | 5-all-await.js   | Example: `await Promise.all()`             |
 
-To run a command from a terminal window, type `node` follow by a space and the starting number of the example file name, then press the <kbd>Tab</kbd>key for auto-completion, followed by another space and finally the number expected by the command.
+To run a command from a terminal window: type `node` follow by a space and the starting number of the example file name, then press the <kbd>Tab</kbd>key for auto-completion, followed by another space and finally the number expected by the command.
 
 ## Promise Chain Examples
 
@@ -151,7 +151,7 @@ Consume an indefinitely pending promise in a chain.
 <<< main ending >>>
 ```
 
-The initial `promise#1` is not programmatically settled and hence all subsequent promises created by the `.then()` and `.catch()` methods in the chain remain pending indefinitely.
+The initial `promise#1` is not programmatically settled, hence all subsequent promises created by the `.then()` and `.catch()` methods in the chain remain pending indefinitely.
 
 #### `node 2-async-chain 1`
 
@@ -213,11 +213,11 @@ Discussion:
 
 1. The immediately resolved `promise#1` enqueues `microtask#1` during the execution of `main()`. The pending promises `promise#2` up to `promise#6` are created synchronously by the calls to the `then()` and `catch()` methods in the chain and will be settled later, after `main()` has run to completion.
 
-2. Once `main()` has exited the JavaScript engine picks up and runs `microtask#1` from the microtask queue. In turn, `microtask#1` invokes the `onFulfilled()` callback of the first `.then()` method in the chain. The return value of the `onFulfilled()` callback is used as to fulfill `promise#2`, which subsequently causes `microtask#2` to be enqueued. This completes the execution of `microtask#1`.
+2. Once `main()` has exited the JavaScript engine picks up and runs `microtask#1` from the microtask queue. In turn, `microtask#1` invokes the `onFulfilled()` callback of the first `.then()` method in the chain. The return value of the `onFulfilled()` callback is used to fulfill `promise#2`, which subsequently causes `microtask#2` to be enqueued. This completes the execution of `microtask#1`.
 
 3. Next, the JavaScript engine picks up `microtask#2` from the microtask queue. It follows the same process as describe above, but now for the second `.then()` in the chain.
 
-4. The first `.catch()` methods in the chain is executed by `microtask#3`. By design, a `.catch()` method has no `onFulfilled()` method (i.e. it is `null`). Instead it has an `onRejected()` callback. It is not called in this case as the incoming promise is fulfilled. Therefore `microtask#3` simply enqueues a new microtask for the next method in the chain. In this case, `microtask#4` for the second `.catch()` in the chain.
+4. The first `.catch()` method in the chain is executed by `microtask#3`. By design, a `.catch()` method has no `onFulfilled()` callback (i.e. it is `null`). Instead it has an `onRejected()` callback. It is not called in this case as the incoming promise is fulfilled. Therefore `microtask#3` simply enqueues a new microtask for the next method in the chain. In this case, `microtask#4` for the second `.catch()` in the chain.
 
 5. When `microtask#4` is picked up and executed, the same process as in the previous step is followed for the second `.catch()` in the chain. Eventually `microtask#5` is enqueued.
 
@@ -227,7 +227,7 @@ Discussion:
 
 #### `node 2-async-chain 2`
 
-A promise chain that consumes a promise that is resolved some time later.
+A promise chain that consumes a promise that is resolved after two seconds.
 
 ```text
 <<< main starting >>>
@@ -274,7 +274,7 @@ A promise chain that consumes a promise that is resolved some time later.
 
 Discussion:
 
-This is similar to the previous example, but now `promise#1` begins as pending promise.
+This is similar to the previous example, but now `promise#1` begins as a pending promise.
 
 #### `node 2-async-chain 3`
 
@@ -320,15 +320,15 @@ A promise chain that consumes an immediately rejected promise.
 
 Discussion:
 
-1. In the case of an rejected promise the `onFulfilled()` callbacks of the `.then()` methods in the chain are bypassed until the first `.catch()` method is encountered. Its `onRejected()` callback is called which happens to return `undefined`, which becomes the fulfillment value its promise (`promise#4`).
+1. In the case of a rejected promise the `onFulfilled()` callbacks of the `.then()` methods in the chain are bypassed until the first `.catch()` method is encountered. Its `onRejected()` callback is called, which happens to return `undefined` which becomes the fulfillment value of its promise (`promise#4`).
 
-2. Because the second `.catch()` now sees a fulfilled promise, its `onRejected()` callback is bypassed and it simply forwards the fulfillment value of the previous promise.
+2. Because the second `.catch()` now sees a fulfilled promise, its `onRejected()` callback is bypassed and the fulfillment value of the previous promise is simply passed down the chain.
 
-3. The last `.then()` in the chain sees a fulfilled promise and therefore calls its `onFulfilled()` callback. This ends the process.
+3. The last `.then()` in the chain sees a fulfilled promise and therefore calls its `onFulfilled()` callback. That ends the process.
 
 #### `node 2-async-chain 4`
 
-A promise chain that consumes a promise that is rejected some time later.
+A promise chain that consumes a promise that is rejected after two seconds.
 
 ```text
 <<< main starting >>>
@@ -374,7 +374,7 @@ A promise chain that consumes a promise that is rejected some time later.
 
 Discussion:
 
-This is similar to the previous example, but now `promise#1` begins as pending promise.
+This is similar to the previous example, but now `promise#1` begins as a pending promise.
 
 ### 3-await.js
 
@@ -395,11 +395,11 @@ async function main(number) {
 }
 ```
 
-The `createPromise()` helper function creates a promise is settled after a two second delay. If `number` is 1 it returns a promise that is resolved to the value `42`. If `number` is 2 it returns a promise that is rejected with an `Error` object as its rejection value.
+The `createPromise()` helper function creates a promise that is settled after a two second delay. If `number` is 1 it returns a promise that is resolved to the value `42`. If `number` is 2 it returns a promise that is rejected with an `Error` object as its rejection value.
 
 #### `node 3-wait 1`
 
-Consume a promise that is resolved some time later, using `await`.
+Consume a promise that is resolved after two seconds, using `await`.
 
 ```text
 <<< main starting >>>
@@ -422,11 +422,11 @@ Discussion:
 
 1. The `main()` function is suspended while awaiting `promise#1`.
 2. When `promise#1` fulfills the `main()` function resumes and outputs the resolved value.
-3. Promise #2 is a promise created a `.then()` call created internally by the `await` keyword and remains unconsumed.
+3. Promise #2 is a promise created by a `.then()` call created internally by the `await` keyword and remains unconsumed.
 
 #### `node 3-wait 2`
 
-Consume a promise that is rejected some time later, using `await`.
+Consume a promise that is rejected after two seconds, using `await`.
 
 ```text
 <<< main starting >>>
@@ -473,7 +473,7 @@ The same `createPromise()` helper function from the previous examples is used he
 
 #### `node 4-all-chain 1`
 
-Using a `Promise.all()` chain, consume an array of two promises that are resolved some time later.
+Using a `Promise.all()` chain, consume an array of two promises that are resolved after two seconds.
 
 There are a lot of promises created here:
 
@@ -544,7 +544,7 @@ Discussion:
 
 #### `node 4-all-chain 2`
 
-Using a `Promise.all()` chain, consume an array of two promises that are rejected some time later.
+Using a `Promise.all()` chain, consume an array of two promises that are rejected after two seconds.
 
 ```text
 <<< main starting >>>
@@ -622,7 +622,7 @@ async function main(number) {
 
 ### `node 5-all-await 1`
 
-Using an awaited `Promise.all()`, consume an array of two promises that are resolved some time later.
+Using an awaited `Promise.all()`, consume an array of two promises that are resolved after two seconds.
 
 The created promises are:
 
@@ -688,7 +688,7 @@ While doable, it would be a bit long-winding to discuss the output in detail. Ho
 
 ### `node 5-all-await 2`
 
-Using an awaited `Promise.all()`, consume an array of two promises that are rejected some time later.
+Using an awaited `Promise.all()`, consume an array of two promises that are rejected after two seconds.
 
 The created promises are the same as in the previous example.
 
@@ -741,6 +741,6 @@ Discussion:
 
 1. The `main()` function exits when `Promise.all()` is settled by a rejection.
 
-2. Most promises are rejected. However, `promise#5` and `promise#7` are fulfilled with the return value (`undefined`) of the interval `.catch()` handlers of `Promise.all()`.
+2. Most promises are rejected. However, `promise#5` and `promise#7` are fulfilled with the return value (`undefined`) of the internal `.catch()` handlers of `Promise.all()`.
 
 3. The `catch {}` block inside function `main()` does not throw an error itself, therefore `promise#8` is settled as fulfilled.

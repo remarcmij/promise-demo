@@ -25,7 +25,13 @@ In order to better understand the result output of each example it important to 
 
 3. Every `.then()` and `.catch()` method call on a promise creates and returns a new promise. These promises are created synchronously, but their callbacks are called asynchronously via a microtask.
 
-    In our custom promise implementation each new promise get assigned a sequence number, starting with 1. All promise events shown in the example output are tagged with the number of the currently executing promise.
+    In our custom promise implementation each new promise get assigned a sequence number, starting with 1. All promise events shown in the example output are tagged with the number of the currently executing promise, e.g.:
+
+    ```text
+    [promise#1 fulfilled]
+    [enqueue microtask#1]
+    etc.
+    ```
 
 ## Example Promise Implementations
 

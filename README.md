@@ -33,6 +33,10 @@ In order to better understand the result output of each example it important to 
     etc.
     ```
 
+This YouTube video by Lydia Hallie, discussing the JavaScript event loop and where microtasks fit in may help to further your understanding:
+
+- [JavaScript Visualized - Event Loop, Web APIs, (Micro)task Queue](https://www.youtube.com/watch?v=eiC58R16hb8)
+
 ## Example Promise Implementations
 
 The first implementation (`sync-promise.js`) is the simplest. It is a synchronous version truly for demo use only and does not work in conjunction with asynchronous events. Consequently, it is essentially useless for practical purposes, but its implementation is relatively easy to follow (check out `sync-promise.js` in the `promises` folder).

@@ -33,6 +33,8 @@ In order to correctly interpret the result output of each example it is importan
     etc.
     ```
 
+    In the output of the examples can be observed that all promises are created within the lifetime of the `main()` function. After `main()` has run (synchronously) to completion, no new promises are created. Thereafter only microtasks can still be (asynchronously) executing.
+
 This YouTube video by Lydia Hallie, discussing the JavaScript event loop and where microtasks fit in may help to further your understanding:
 
 - [JavaScript Visualized - Event Loop, Web APIs, (Micro)task Queue](https://www.youtube.com/watch?v=eiC58R16hb8)
@@ -442,7 +444,6 @@ Consume a promise that is rejected after two seconds, using `await`.
 [promise#2 fulfilled]
 [microtask#1 exit]
 error: Oops... Something went wrong!
-<<< main ending >>>
 <<< main ending >>>
 ```
 

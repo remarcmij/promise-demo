@@ -21,9 +21,9 @@ In order to better understand the result output of each example it important to 
     then(null, onRejected)
     ```
 
-    In case of a rejected promise `onRejected`, i.e. the second callback parameter.
+    In case of a rejected promise `onRejected`, i.e. the second callback parameter is called.
 
-3. Each `.then()` and `.catch()` method call on a promise creates and returns a new promise. These promises are created synchronously, but their callbacks are called asynchronously via a microtask.
+3. Every `.then()` and `.catch()` method call on a promise creates and returns a new promise. These promises are created synchronously, but their callbacks are called asynchronously via a microtask.
 
     In our custom promise implementation each new promise get assigned a sequence number, starting with 1. All promise events shown in the example output are tagged with the number of the currently executing promise.
 

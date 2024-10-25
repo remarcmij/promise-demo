@@ -3,7 +3,7 @@ export class SyncPromise {
   #value = undefined;
 
   static resolve(value) {
-    return new SyncPromise((resolve, reject) => resolve(value));
+    return new SyncPromise((resolve) => resolve(value));
   }
 
   static reject(value) {

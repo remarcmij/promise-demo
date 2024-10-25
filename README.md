@@ -2,6 +2,31 @@
 
 This repository features two example promise implementations, for demo purposes only. The more advanced implementation uses [microtasks](https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide) and logs important events to the console while processing each promise. This may help to deepen your understanding of how promises work. (Or it did at least do so for the author :smiley:.)
 
+## Introduction
+
+In order to better understand the result output of each example it important to recollect some important characteristics of promises in JavaScript:
+
+1. The `.then()` method can take [two callback parameters](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then#syntax), the second being optional:
+
+    ```js
+    then(onFulfilled)
+    then(onFulfilled, onRejected)
+    ```
+
+    The second callback, if present, is called when a promise is rejected. In practice, we often see `.then()` being used with only one `onFulfilled` callback, relying on a down-chain `.catch()` method to handle promise rejections.
+
+2. The `.catch()` method is just syntactic sugar for:
+
+    ```js
+    then(null, onRejected)
+    ```
+
+    In case of a rejected promise `onRejected`, i.e. the second callback parameter.
+
+3. Each `.then()` and `.catch()` method call on a promise creates and returns a new promise. These promises are created synchronously, but their callbacks are called asynchronously via a microtask.
+
+    In our custom promise implementation each new promise get assigned a sequence number, starting with 1. All promise events shown in the example output are tagged with the number of the currently executing promise.
+
 ## Example Promise Implementations
 
 The first implementation (`sync-promise.js`) is the simplest. It is a synchronous version truly for demo use only and does not work in conjunction with asynchronous events. Consequently, it is essentially useless for practical purposes, but its implementation is relatively easy to follow (check out `sync-promise.js` in the `promises` folder).

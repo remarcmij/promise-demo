@@ -9,7 +9,7 @@ export class AsyncPromise {
     if (value instanceof AsyncPromise) {
       return value;
     }
-    return new AsyncPromise((resolve, reject) => resolve(value));
+    return new AsyncPromise((resolve) => resolve(value));
   }
 
   static reject(value) {
@@ -19,7 +19,7 @@ export class AsyncPromise {
   // Promise.all() adapted from https://medium.com/@copperwall/implementing-promise-all-575a07db509a
   static all(promises) {
     return new AsyncPromise((resolve, reject) => {
-      let results = [];
+      const results = [];
       let completed = 0;
 
       promises.forEach((promise, index) => {

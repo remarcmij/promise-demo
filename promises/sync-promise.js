@@ -29,23 +29,32 @@ export class SyncPromise {
   }
 
   then(onResolved, onRejected) {
-    if (onResolved && this.#state === 'fulfilled') {
-      const newVal = onResolved(this.#value);
-      if (newVal instanceof SyncPromise) {
-        return newVal;
+    if (this.#state === 'fulfilled') {
+      let value = this.#value;
+      if (onResolved) {
+        value = onResolved(value);
+        if (value instanceof SyncPromise) {
+          return value;
+        }
       }
-      return SyncPromise.resolve(newVal);
+
+      return SyncPromise.resolve(value);
     }
 
-    if (onRejected && this.#state === 'rejected') {
-      const newVal = onRejected(this.#value);
-      if (newVal instanceof SyncPromise) {
-        return newVal;
+    if (this.#state === 'rejected') {
+      let value = this.#value;
+      if (onRejected) {
+        value = onRejected(value);
+        if (value instanceof SyncPromise) {
+          return value;
+        }
+        return SyncPromise.resolve(value);
       }
-      return SyncPromise.resolve(newVal);
+
+      return SyncPromise.reject(value);
     }
 
-    return this;
+    throw new Error('This synchronous promise cannot be pending');
   }
 
   catch(onRejected) {

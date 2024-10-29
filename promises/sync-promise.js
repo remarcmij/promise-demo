@@ -1,6 +1,11 @@
+const log = createLogger(false);
+
 export class SyncPromise {
+  static #count = 0;
+
   #state = 'pending';
   #value = undefined;
+  #id = 0;
 
   static resolve(value) {
     return new SyncPromise((resolve) => resolve(value));
@@ -11,10 +16,14 @@ export class SyncPromise {
   }
 
   constructor(executor) {
+    // Assign a unique id to each promise
+    this.#id = ++SyncPromise.#count;
+
     const resolve = (value) => {
       if (this.#state === 'pending') {
         this.#state = 'fulfilled';
         this.#value = value;
+        log(`[promise#${this.#id} fulfilled]`);
       }
     };
 
@@ -22,6 +31,7 @@ export class SyncPromise {
       if (this.#state === 'pending') {
         this.#state = 'rejected';
         this.#value = value;
+        log(`[promise#${this.#id} rejected]`);
       }
     };
 
@@ -54,10 +64,18 @@ export class SyncPromise {
       return SyncPromise.reject(value);
     }
 
-    throw new Error('This synchronous promise cannot be pending');
+    throw new Error('A synchronous promise cannot be pending');
   }
 
   catch(onRejected) {
     return this.then(null, onRejected);
   }
+}
+
+function createLogger(showOutput = false) {
+  return (...args) => {
+    if (showOutput) {
+      console.log(...args);
+    }
+  };
 }

@@ -36,6 +36,10 @@ export class SyncPromise {
     };
 
     executor(resolve, reject);
+
+    if (this.#state === 'pending') {
+      log(`[promise#${this.#id} pending]`);
+    }
   }
 
   then(onResolved, onRejected) {
@@ -64,7 +68,8 @@ export class SyncPromise {
       return SyncPromise.reject(value);
     }
 
-    throw new Error('A synchronous promise cannot be pending');
+    // Return a new pending promise
+    return new SyncPromise(() => {});
   }
 
   catch(onRejected) {

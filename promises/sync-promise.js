@@ -1,4 +1,4 @@
-const log = createLogger(false);
+const log = createLogger(true);
 
 export class SyncPromise {
   static #count = 0;

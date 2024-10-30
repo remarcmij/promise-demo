@@ -1,4 +1,4 @@
-// import { SyncPromise as Promise } from './promises/sync-promise.js';
+import { SyncPromise as Promise } from './promises/sync-promise.js';
 
 function createPromise(number) {
   return new Promise((resolve, reject) => {

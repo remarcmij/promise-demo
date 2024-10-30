@@ -25,7 +25,7 @@ In order to correctly interpret the result output of each example it is importan
 
 3. Every `.then()` and `.catch()` method call on a promise creates and returns a new promise. These promises are created synchronously, but their callbacks are called asynchronously using a microtask, at the instant that a promise is fulfilled or rejected.
 
-    In our custom promise implementation, each new promise gets assigned a sequence number, starting with 1. All promise events shown in the example output are tagged with the number of the currently executing promise, e.g.:
+    In our custom promise implementations, each new promise gets assigned a sequence number, starting with 1. All promise events shown in the example output are tagged with the number of the currently executing promise, e.g.:
 
     ```text
     [promise#1 fulfilled]
@@ -101,7 +101,7 @@ function main(number) {
 node 1-sync-chain <number>
 ```
 
-Where `<number>` is 1 or 2.
+Where `<number>` is 1, 2, 3 or 4.
 
 #### `node 1-sync-chain 1`
 
@@ -109,28 +109,85 @@ Consume an immediately resolved **synchronous** promise.
 
 ```text
 <<< main starting >>>
+[promise#1 fulfilled]
 >> then#1
+[promise#2 fulfilled]
 >> then#2
+[promise#3 fulfilled]
+[promise#4 fulfilled]
+[promise#5 fulfilled]
 >> then#5
+[promise#6 fulfilled]
 <<< main ending >>>
 ```
+
+Discussion:
 
 Notice that the `main()` function exits after completion of the promise chain. This is because of the synchronous nature of this promise implementation.
 
 #### node 1-sync-chain 2
 
+Attempt to consume a promise that is resolved after two seconds.
+
+```text
+[promise#1 pending]
+[promise#2 pending]
+[promise#3 pending]
+[promise#4 pending]
+[promise#5 pending]
+[promise#6 pending]
+<<< main ending >>>
+[promise#1 fulfilled]
+```
+
+Discussion:
+
+When attempting to settle this simple synchronous promise implementation asynchronously it breaks. The `onFulfilled()` and `onRejected()` callbacks of the `.then()` and `.catch()` methods are never called.
+
+#### node 1-sync-chain 3
+
 Consume an immediately rejected **synchronous** in a chain.
 
 ```text
 <<< main starting >>>
+[promise#1 rejected]
+[promise#2 rejected]
+[promise#3 rejected]
 >> catch#3
+[promise#4 fulfilled]
+[promise#5 fulfilled]
 >> then#5
+[promise#6 fulfilled]
 <<< main ending >>>
 ```
 
-Note: All remaining examples use the `AsyncPromise` class imported from `async-promise.js`.
+Discussion:
+
+Notice that the `main()` function exits after completion of the promise chain. This is because of the synchronous nature of this promise implementation.
+
+#### node 1-sync-chain 4
+
+Attempt to consume a promise that is rejected after two seconds.
+
+```text
+<<< main starting >>>
+[promise#1 pending]
+[promise#2 pending]
+[promise#3 pending]
+[promise#4 pending]
+[promise#5 pending]
+[promise#6 pending]
+<<< main ending >>>
+[promise#1 rejected]
+```
+
+Discussion:
+
+Results similar to example with number 2 above.
 
 ### 2-async-chain.js
+
+Note: All remaining examples use the `AsyncPromise` class imported from `async-promise.js`.
 
 ```text
 node 2-async-chain <number>

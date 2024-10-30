@@ -5,9 +5,9 @@ function createPromise(number) {
     if (number === 1) {
       resolve();
     } else if (number === 2) {
-      setTimeout(resolve, 2000);
-    } else if (number === 3) {
       reject();
+    } else if (number === 3) {
+      setTimeout(resolve, 2000);
     } else if (number === 4) {
       setTimeout(reject, 2000);
     }

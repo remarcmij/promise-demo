@@ -127,25 +127,6 @@ Notice that the `main()` function exits after completion of the promise chain. T
 
 #### node 1-sync-chain 2
 
-Attempt to consume a promise that is resolved after two seconds.
-
-```text
-[promise#1 pending]
-[promise#2 pending]
-[promise#3 pending]
-[promise#4 pending]
-[promise#5 pending]
-[promise#6 pending]
-<<< main ending >>>
-[promise#1 fulfilled]
-```
-
-Discussion:
-
-When attempting to settle this simple synchronous promise implementation asynchronously it breaks. The `onFulfilled()` and `onRejected()` callbacks of the `.then()` and `.catch()` methods are never called.
-
-#### node 1-sync-chain 3
-
 Consume an immediately rejected **synchronous** in a chain.
 
 ```text
@@ -165,6 +146,25 @@ Discussion:
 
 Notice that the `main()` function exits after completion of the promise chain. This is because of the synchronous nature of this promise implementation.
 
+#### node 1-sync-chain 3
+
+Attempt to consume a promise that is resolved after two seconds.
+
+```text
+[promise#1 pending]
+[promise#2 pending]
+[promise#3 pending]
+[promise#4 pending]
+[promise#5 pending]
+[promise#6 pending]
+<<< main ending >>>
+[promise#1 fulfilled]
+```
+
+Discussion:
+
+When attempting to settle this simple synchronous promise implementation asynchronously it breaks. The `promise#1` is fulfilled asynchronously (i.e., after the `main()` function has ended) but the `onFulfilled()` method of the first `.then()` method is never called and all other promises remain pending.
+
 #### node 1-sync-chain 4
 
 Attempt to consume a promise that is rejected after two seconds.
@@ -183,7 +183,7 @@ Attempt to consume a promise that is rejected after two seconds.
 
 Discussion:
 
-Results similar to example with number 2 above.
+When attempting to settle this simple synchronous promise implementation asynchronously it breaks. The `promise#1` is rejected asynchronously (i.e., after the `main()` function has ended) but all other promises remain pending.
 
 ### 2-async-chain.js
 

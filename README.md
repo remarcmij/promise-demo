@@ -2,7 +2,7 @@
 
 This repository features two example promise implementations, for demo purposes only. The more advanced implementation uses [microtasks](https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide) and logs important events to the console while processing each promise. This may help to deepen your understanding of how promises work.
 
-## Introduction
+## Some Important Promise Characteristics
 
 In order to correctly interpret the result output of each example it is important to emphasize some important characteristics of promises in JavaScript:
 
@@ -49,8 +49,8 @@ The second implementation (`async-promise.js`) is an asynchronous version that u
 
 | File             | Description                          |
 | ---------------- | ------------------------------------ |
-| sync-promise.js  | Synchronous Promise implementation.  |
-| async-promise.js | Asynchronous Promise implementation. |
+| [sync-promise.js](./promises/sync-promise.js)  | Synchronous Promise implementation.  |
+| [async-promise.js](./promises/async-promise.js) | Asynchronous Promise implementation. |
 
 ## Example Promise consumers
 
@@ -58,11 +58,11 @@ Example `Promise` consumers in root folder:
 
 | File             | Description                                |
 | ---------------- | ------------------------------------------ |
-| 1-sync-chain.js  | Consumes a `SyncPromise` in a chain.       |
-| 2-async-chain.js | Consumes `AsyncPromise` in a chain.        |
-| 3-await.js       | Consumes a promise using `async/await`.    |
-| 4-all-chain.js   | Example: `Promise.all().then(...).catch()` |
-| 5-all-await.js   | Example: `await Promise.all()`             |
+| [1-sync-chain.js](./1-sync-chain.js)  | Consumes a `SyncPromise` in a chain.       |
+| [2-async-chain.js](./2-async-chain.js) | Consumes `AsyncPromise` in a chain.        |
+| [3-await.js](./3-await.js)       | Consumes a promise using `async/await`.    |
+| [4-all-chain.js](./4-all-chain.js)   | Example: `Promise.all().then(...).catch()` |
+| [5-all-await.js](./5-all-await.js)   | Example: `await Promise.all()`             |
 
 To run a command from a terminal window: type `node` follow by a space and the starting number of the example file name, then press the <kbd>Tab</kbd>key for auto-completion, followed by another space and finally the number expected by the command.
 
